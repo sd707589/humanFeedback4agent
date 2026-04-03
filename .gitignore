@@ -21,3 +21,6 @@ wheels/
 nohup.out
 
 *.zip
+
+# Worktrees
+.worktrees/
