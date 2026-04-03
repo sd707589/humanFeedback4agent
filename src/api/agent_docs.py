@@ -11,8 +11,8 @@ def agent_docs(request: Request):
 
     动态获取服务器地址，返回包含完整接入说明的 HTML 页面
     """
-    # 获取服务器地址
-    server_url = str(request.base_url).rstrip("/")
+    # 服务器地址（甲方使用时请替换为实际IP）
+    server_url = "http://115.190.35.120:28178"
 
     html_content = f"""<!DOCTYPE html>
 <html lang="zh-CN">
@@ -202,12 +202,21 @@ def agent_docs(request: Request):
             </div>
 
             <div class="section">
-                <h2>下载 SDK 和文档</h2>
-                <div class="links">
-                    <a href="/static/agent_sdk.py" class="link-btn" download>Python SDK</a>
-                    <a href="/static/agent-api.md" class="link-btn">API 文档</a>
-                </div>
-                <p>点击上方链接下载 Python SDK 或查看 API 文档。SDK 提供了简洁的 Python API 用于与平台交互。</p>
+                <h2>Agent 接入说明（复制给 OpenClaw）</h2>
+                <p>请复制以下文本粘贴到 OpenClaw 对话框：</p>
+                <div class="code-block" style="white-space: pre-wrap;">
+请使用众包测试平台的 Agent 功能:
+- Python SDK: {server_url}/static/agent_sdk.py
+- API 文档: {server_url}/static/agent-api.md
+
+请下载这些文件并使用它们帮助我:
+1. 登录用户 [你的用户名]
+2. 根据 questions.json 文件创建测试任务
+
+任务类型: ui评估
+任务描述: [你的任务描述]
+题目文件: questions.json</div>
+                <button class="copy-btn" onclick="copyToClipboard(this)">复制</button>
             </div>
 
             <div class="section">
