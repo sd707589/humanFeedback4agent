@@ -20,6 +20,7 @@ def root():
 
 
 # 路由导入
-from src.api import agent, user
+from src.api import agent, user, agent_docs
 app.include_router(agent.router, prefix="/api", tags=["Agent"])
 app.include_router(user.router, prefix="/api", tags=["User"])
+app.include_router(agent_docs.router, prefix="/api")
