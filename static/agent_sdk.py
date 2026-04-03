@@ -48,7 +48,7 @@ class CrowdTestSDK:
         url = f"{self.base_url}/api/users/login"
         data = {"username": username, "password": password}
 
-        response = requests.post(url, json=data)
+        response = requests.post(url, json=data, timeout=30)
         response.raise_for_status()
 
         result = response.json()
@@ -60,7 +60,8 @@ class CrowdTestSDK:
         self,
         task_type: str,
         content: str,
-        questions: List[Dict[str, Any]]
+        questions: List[Dict[str, Any]],
+        answer_key: Optional[str] = None
     ) -> dict:
         """
         创建测试任务
@@ -69,6 +70,7 @@ class CrowdTestSDK:
             task_type: 任务类型，如 "ui评估"
             content: 任务描述
             questions: 题目列表，每个题目包含 content, options, required_answers, timeout_seconds
+            answer_key: 可选的答案密钥
 
         Returns:
             任务信息字典
@@ -83,10 +85,11 @@ class CrowdTestSDK:
         data = {
             "task_type": task_type,
             "content": content,
+            "answer_key": answer_key,
             "questions": questions
         }
 
-        response = requests.post(url, json=data, headers=self._get_headers())
+        response = requests.post(url, json=data, headers=self._get_headers(), timeout=30)
         response.raise_for_status()
 
         return response.json()
@@ -108,7 +111,7 @@ class CrowdTestSDK:
             raise ValueError("请先调用 login() 登录")
 
         url = f"{self.base_url}/api/tasks/{task_id}"
-        response = requests.get(url, headers=self._get_headers())
+        response = requests.get(url, headers=self._get_headers(), timeout=30)
         response.raise_for_status()
 
         return response.json()
@@ -130,7 +133,7 @@ class CrowdTestSDK:
             raise ValueError("请先调用 login() 登录")
 
         url = f"{self.base_url}/api/tasks/{task_id}/results"
-        response = requests.get(url, headers=self._get_headers())
+        response = requests.get(url, headers=self._get_headers(), timeout=30)
         response.raise_for_status()
 
         return response.json()
