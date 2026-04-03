@@ -76,6 +76,37 @@ Error Response:
 - 400: {"detail": "具体错误信息"}
 ```
 
+### 获取任务结果
+
+```
+GET /api/tasks/{task_id}/results
+Headers:
+  Authorization: Bearer {access_token}
+
+Response (200 OK):
+{
+  "task_id": 1,
+  "task_type": "ui评估",
+  "content": "任务描述",
+  "status": "running",
+  "total_questions": 5,
+  "completed_questions": 3,
+  "questions": [
+    {
+      "question_id": 1,
+      "content": "题目内容",
+      "options": ["选项A", "选项B", "选项C"],
+      "required_answers": 5,
+      "current_answers_count": 3,
+      "answer_distribution": {"选项A": 2, "选项B": 1},
+      "correct_answer": "选项A",
+      "avg_time_spent": 25.5
+    }
+  ]
+}
+```
+```
+
 ## 使用方法
 
 1. 使用 Python SDK 的 `login(username, password)` 登录
