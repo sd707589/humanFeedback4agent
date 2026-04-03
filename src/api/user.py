@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import secrets
 
 from src.models import get_db, User, TestQuestion, UserAnswer
@@ -45,7 +45,8 @@ class QuestionDisplay(BaseModel):
     question_id: int
     content: str
     options: list
-    lock_expires_at: Optional[str] = None  # 锁定过期时间
+    lock_expires_at: Optional[str] = None  # 锁定过期时间（ISO格式）
+    timeout_seconds: Optional[int] = None  # 剩余超时秒数（前端倒计时用）
 
 
 class AnswerSubmit(BaseModel):
@@ -171,20 +172,28 @@ def get_me(authorization: Optional[str] = Header(None), db: Session = Depends(ge
 def get_next_question(authorization: Optional[str] = Header(None), db: Session = Depends(get_db)):
     """获取下一道待回答的题目"""
     user = get_current_user(authorization, db)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
-    # 清理超时的锁定
-    db.query(TestQuestion).filter(
+    # 清理超时的锁定（手动处理时区问题）
+    locked_questions = db.query(TestQuestion).filter(
         TestQuestion.locked_by.isnot(None),
-        TestQuestion.lock_expires_at < now
-    ).update({
-        TestQuestion.locked_by: None,
-        TestQuestion.lock_expires_at: None
-    })
+        TestQuestion.lock_expires_at.isnot(None)
+    ).all()
+
+    for q in locked_questions:
+        lock_expires = q.lock_expires_at
+        if lock_expires.tzinfo is None:
+            lock_expires = lock_expires.replace(tzinfo=timezone.utc)
+        if now > lock_expires:
+            q.locked_by = None
+            q.lock_expires_at = None
     db.commit()
 
     global global_question_pointer
     last_question_id = global_question_pointer
+
+    # 获取当前UTC时间（带时区信息）
+    now = datetime.now(timezone.utc)
 
     # 查找需要更多答案的题目（未达到required_answers）
     # 注意：不再过滤locked_by，因为允许多个用户同时做同一道题
@@ -225,7 +234,8 @@ def get_next_question(authorization: Optional[str] = Header(None), db: Session =
         question_id=selected_question.id,
         content=selected_question.content,
         options=selected_question.options_json,
-        lock_expires_at=lock_expires.isoformat()
+        lock_expires_at=lock_expires.isoformat(),
+        timeout_seconds=selected_question.timeout_seconds
     )
 
 
@@ -237,7 +247,7 @@ def submit_answer(
 ):
     """提交答案"""
     user = get_current_user(authorization, db)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     # 验证题目存在
     question = db.query(TestQuestion).filter(TestQuestion.id == answer_data.question_id).first()
@@ -257,7 +267,10 @@ def submit_answer(
         raise HTTPException(status_code=400, detail="该题目已收集足够答案")
 
     # 清理过期的锁定
-    if question.lock_expires_at and now > question.lock_expires_at:
+    lock_expires = question.lock_expires_at
+    if lock_expires and lock_expires.tzinfo is None:
+        lock_expires = lock_expires.replace(tzinfo=timezone.utc)
+    if lock_expires and now > lock_expires:
         question.locked_by = None
         question.lock_expires_at = None
         db.commit()

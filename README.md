@@ -35,17 +35,23 @@ uv sync
 ### 2. 启动服务
 
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 28177
+python run.py
 ```
 
-服务启动后访问: http://localhost:28177
+或使用 uvicorn：
+
+```bash
+uvicorn main:app --host 0.0.0.0 --port 28178
+```
+
+服务启动后访问: http://localhost:28178
 
 ### 3. Agent API 使用
 
 #### 创建测试任务
 
 ```bash
-curl -X POST http://localhost:28177/api/tasks \
+curl -X POST http://localhost:28178/api/tasks \
   -H "Content-Type: application/json" \
   -d '{
     "task_type": "ui评估",
@@ -63,13 +69,13 @@ curl -X POST http://localhost:28177/api/tasks \
 #### 查询任务状态
 
 ```bash
-curl http://localhost:28177/api/tasks/1
+curl http://localhost:28178/api/tasks/1
 ```
 
 #### 获取测试结果
 
 ```bash
-curl http://localhost:28177/api/tasks/1/results
+curl http://localhost:28178/api/tasks/1/results
 ```
 
 ### 4. 用户API使用
@@ -77,7 +83,7 @@ curl http://localhost:28177/api/tasks/1/results
 #### 用户注册
 
 ```bash
-curl -X POST http://localhost:28177/api/users/register \
+curl -X POST http://localhost:28178/api/users/register \
   -H "Content-Type: application/json" \
   -d '{"username": "your_username", "password": "your_password"}'
 ```
@@ -85,7 +91,7 @@ curl -X POST http://localhost:28177/api/users/register \
 #### 用户登录
 
 ```bash
-curl -X POST http://localhost:28177/api/users/login \
+curl -X POST http://localhost:28178/api/users/login \
   -H "Content-Type: application/json" \
   -d '{"username": "your_username", "password": "your_password"}'
 ```
@@ -98,21 +104,21 @@ Authorization: Bearer YOUR_TOKEN
 #### 获取当前用户信息
 
 ```bash
-curl http://localhost:28177/api/users/me \
+curl http://localhost:28178/api/users/me \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 #### 领取下一道题目
 
 ```bash
-curl http://localhost:28177/api/questions/next \
+curl http://localhost:28178/api/questions/next \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 #### 提交答案
 
 ```bash
-curl -X POST http://localhost:28177/api/answers \
+curl -X POST http://localhost:28178/api/answers \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -d '{"question_id": 1, "answer": "A界面", "time_spent": 5}'
@@ -120,16 +126,18 @@ curl -X POST http://localhost:28177/api/answers \
 
 ## API 文档
 
-启动服务后访问 http://localhost:28177/docs 查看完整API文档（Swagger UI）。
+启动服务后访问 http://localhost:28178/docs 查看完整API文档（Swagger UI）。
 
 ## 项目结构
 
 ```
 .
 ├── main.py              # FastAPI应用入口
+├── run.py               # 启动脚本（自动释放端口）
 ├── pyproject.toml       # 项目配置
 ├── src/
 │   ├── models.py        # 数据模型
+│   ├── port_utils.py    # 端口释放工具
 │   └── api/
 │       ├── agent.py     # Agent相关API
 │       └── user.py      # 用户相关API
