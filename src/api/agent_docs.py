@@ -214,14 +214,17 @@ def agent_docs(request: Request):
                 <h2>快速开始 (OpenClaw)</h2>
                 <p>在 OpenClaw 或其他 Agent 环境中，使用以下指令完成任务创建和结果获取：</p>
                 <div class="code-block">
-                    <span class="comment"># 1. 创建测试任务</span>
-                    <span class="keyword">python</span> agent_sdk.py create-task --questions <span class="string">"问题1|问题2|问题3"</span> --answers <span class="string">"答案1|答案2|答案3"</span> --base-url <span class="string">{server_url}</span>
+                    <span class="comment"># 1. 创建测试任务（需要先准备 questions.json 文件）</span>
+                    <span class="keyword">python</span> agent_sdk.py --username <span class="string">your_username</span> --password <span class="string">your_password</span> --task-type <span class="string">ui评估</span> --task-content <span class="string">"测试APP登录界面"</span> --questions-json <span class="string">questions.json</span> --base-url <span class="string">{server_url}</span>
 
                     <span class="comment"># 2. 查看任务状态</span>
-                    <span class="keyword">python</span> agent_sdk.py get-task --task-id <span class="string">&lt;task_id&gt;</span> --base-url <span class="string">{server_url}</span>
+                    <span class="keyword">python</span> agent_sdk.py --username <span class="string">your_username</span> --password <span class="string">your_password</span> ...（创建任务后会返回 task_id）
 
-                    <span class="comment"># 3. 获取聚合结果</span>
-                    <span class="keyword">python</span> agent_sdk.py get-results --task-id <span class="string">&lt;task_id&gt;</span> --base-url <span class="string">{server_url}</span>
+                    <span class="comment"># 3. 使用 SDK 编程方式获取结果</span>
+                    <span class="keyword">from</span> agent_sdk <span class="keyword">import</span> CrowdTestSDK
+                    sdk = CrowdTestSDK(base_url=<span class="string">"{server_url}"</span>)
+                    sdk.login(<span class="string">"username"</span>, <span class="string">"password"</span>)
+                    results = sdk.get_task_results(<span class="number">1</span>)
                 </div>
                 <button class="copy-btn" onclick="copyToClipboard(this)">复制</button>
             </div>
@@ -235,18 +238,39 @@ def agent_docs(request: Request):
 <span class="comment"># 初始化 SDK</span>
 sdk = CrowdTestSDK(base_url=<span class="string">"{server_url}"</span>)
 
+<span class="comment"># 登录</span>
+login_result = sdk.login(<span class="string">"username"</span>, <span class="string">"password"</span>)
+<span class="keyword">print</span>(f<span class="string">"登录成功，当前积分: {{login_result['user']['points']}}"</span>)
+
+<span class="comment"># 定义题目</span>
+questions = [
+    <span class="keyword">{{</span>
+        <span class="string">"content"</span>: <span class="string">"这个按钮的颜色是否清晰?"</span>,
+        <span class="string">"options"</span>: [<span class="string">"非常清晰"</span>, <span class="string">"清晰"</span>, <span class="string">"一般"</span>, <span class="string">"不清晰"</span>],
+        <span class="string">"required_answers"</span>: <span class="number">5</span>,
+        <span class="string">"timeout_seconds"</span>: <span class="number">60</span>
+    <span class="keyword">}}</span>,
+    <span class="keyword">{{</span>
+        <span class="string">"content"</span>: <span class="string">"页面加载速度是否可以接受?"</span>,
+        <span class="string">"options"</span>: [<span class="string">"非常快"</span>, <span class="string">"快"</span>, <span class="string">"一般"</span>, <span class="string">"慢"</span>],
+        <span class="string">"required_answers"</span>: <span class="number">3</span>,
+        <span class="string">"timeout_seconds"</span>: <span class="number">45</span>
+    <span class="keyword">}}</span>
+]
+
 <span class="comment"># 创建测试任务</span>
 task = sdk.create_task(
-    questions=[<span class="string">"问题1"</span>, <span class="string">"问题2"</span>, <span class="string">"问题3"</span>],
-    answers=[<span class="string">"答案1"</span>, <span class="string">"答案2"</span>, <span class="string">"答案3"</span>]
+    task_type=<span class="string">"ui评估"</span>,
+    content=<span class="string">"测试APP登录界面"</span>,
+    questions=questions
 )
-<span class="keyword">print</span>(f<span class="string">"Task ID: {{task['task_id']}}"</span>)
+<span class="keyword">print</span>(f<span class="string">"任务创建成功，ID: {{task['id']}}"</span>)
 
 <span class="comment"># 获取任务状态</span>
-status = sdk.get_task_status(task[<span class="string">"task_id"</span>])
+status = sdk.get_task_status(task[<span class="string">"id"</span>])
 
 <span class="comment"># 获取聚合结果</span>
-results = sdk.get_results(task[<span class="string">"task_id"</span>])
+results = sdk.get_task_results(task[<span class="string">"id"</span>])
                 </div>
                 <button class="copy-btn" onclick="copyToClipboard(this)">复制</button>
             </div>
@@ -258,34 +282,39 @@ results = sdk.get_results(task[<span class="string">"task_id"</span>])
                     <h3>创建任务请求 (POST /api/tasks)</h3>
                     <div class="code-block">
 <span class="keyword">{{</span>
-    <span class="string">"title"</span>: <span class="string">"测试任务标题"</span>,
+    <span class="string">"task_type"</span>: <span class="string">"ui评估"</span>,
+    <span class="string">"content"</span>: <span class="string">"测试APP登录界面"</span>,
     <span class="string">"questions"</span>: [
-        <span class="string">"问题1: 请问这个功能是否正常工作？"</span>,
-        <span class="string">"问题2: 页面加载速度是否满意？"</span>,
-        <span class="string">"问题3: 界面设计是否符合您的预期？"</span>
-    ],
-    <span class="string">"answers"</span>: [
-        <span class="string">"正常工作"</span>,
-        <span class="string">"满意"</span>,
-        <span class="string">"符合"</span>
-    ],
-    <span class="string">"question_timeout"</span>: <span class="number">60</span>,
-    <span class="string">"description"</span>: <span class="string">"可选的任务描述"</span>
+        <span class="keyword">{{</span>
+            <span class="string">"content"</span>: <span class="string">"这个按钮的颜色是否清晰?"</span>,
+            <span class="string">"options"</span>: [<span class="string">"非常清晰"</span>, <span class="string">"清晰"</span>, <span class="string">"一般"</span>, <span class="string">"不清晰"</span>],
+            <span class="string">"required_answers"</span>: <span class="number">5</span>,
+            <span class="string">"timeout_seconds"</span>: <span class="number">60</span>
+        <span class="keyword">}}</span>
+    ]
 <span class="keyword">}}</span>
                     </div>
                 </div>
                 <div class="json-example" style="margin-top: 15px;">
-                    <h3>获取结果响应 (GET /api/tasks/{{id}}/results)</h3>
+                    <h3>获取结果响应 (GET /api/tasks/{id}/results)</h3>
                     <div class="code-block">
 <span class="keyword">{{</span>
-    <span class="string">"task_id"</span>: <span class="string">"xxx"</span>,
-    <span class="string">"status"</span>: <span class="string">"completed"</span>,
-    <span class="string">"results"</span>: [
+    <span class="string">"task_id"</span>: <span class="number">1</span>,
+    <span class="string">"task_type"</span>: <span class="string">"ui评估"</span>,
+    <span class="string">"content"</span>: <span class="string">"测试APP登录界面"</span>,
+    <span class="string">"status"</span>: <span class="string">"running"</span>,
+    <span class="string">"total_questions"</span>: <span class="number">2</span>,
+    <span class="string">"completed_questions"</span>: <span class="number">1</span>,
+    <span class="string">"questions"</span>: [
         <span class="keyword">{{</span>
-            <span class="string">"question"</span>: <span class="string">"问题1"</span>,
-            <span class="string">"expected_answer"</span>: <span class="string">"答案1"</span>,
-            <span class="string">"user_answers"</span>: [<span class="string">"答案1"</span>, <span class="string">"答案1"</span>, <span class="string">"答案2"</span>],
-            <span class="string">"answer_count"</span>: <span class="number">3</span>
+            <span class="string">"question_id"</span>: <span class="number">1</span>,
+            <span class="string">"content"</span>: <span class="string">"这个按钮的颜色是否清晰?"</span>,
+            <span class="string">"options"</span>: [<span class="string">"非常清晰"</span>, <span class="string">"清晰"</span>, <span class="string">"一般"</span>, <span class="string">"不清晰"</span>],
+            <span class="string">"required_answers"</span>: <span class="number">5</span>,
+            <span class="string">"current_answers_count"</span>: <span class="number">3</span>,
+            <span class="string">"answer_distribution"</span>: <span class="keyword">{{</span><span class="string">"非常清晰"</span>: <span class="number">2</span>, <span class="string">"清晰"</span>: <span class="number">1</span><span class="keyword">}}</span>,
+            <span class="string">"correct_answer"</span>: <span class="string">"非常清晰"</span>,
+            <span class="string">"avg_time_spent"</span>: <span class="number">25.5</span>
         <span class="keyword">}}</span>
     ]
 <span class="keyword">}}</span>
