@@ -11,11 +11,10 @@ def agent_docs(request: Request):
 
     动态获取服务器地址，返回包含完整接入说明的 HTML 页面
     """
-    # 服务器地址（默认值）
     default_server_ip = "115.190.35.120"
     port = "28178"
 
-    html_content = f"""<!DOCTYPE html>
+    html_content = """<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -185,7 +184,6 @@ def agent_docs(request: Request):
             color: #666;
             font-size: 0.9em;
         }}
-        /* Server IP input style */
         .server-ip-input {{
             display: flex;
             align-items: center;
@@ -450,7 +448,7 @@ sdk = CrowdTestSDK(base_url="${serverUrl}")
 
 # 登录
 login_result = sdk.login("username", "password")
-print(f"登录成功，当前积分: {{login_result['user']['points']}}")
+print(f"登录成功，当前积分: {login_result['user']['points']}")
 
 # 定义题目
 questions = [
@@ -474,7 +472,7 @@ task = sdk.create_task(
     content="测试APP登录界面",
     questions=questions
 )
-print(f"任务创建成功，ID: {{task['id']}}")
+print(f"任务创建成功，ID: {task['id']}")
 
 # 获取任务状态
 status = sdk.get_task_status(task["id"])
@@ -495,4 +493,4 @@ results = sdk.get_task_results(task["id"])`;
 </body>
 </html>
     """
-    return html_content
+    return html_content.format(default_server_ip=default_server_ip, port=port)

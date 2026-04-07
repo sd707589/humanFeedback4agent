@@ -138,7 +138,164 @@ class CrowdTestSDK:
 
         return response.json()
 
+    def upload_image(self, image_path: str) -> str:
+        """
+        上传图片到服务器
 
+        图片会保存在服务器的 /tmp 目录下，超过 2 天自动清理。
+        返回的 URL 可以直接用在 Markdown 的 ![alt](url) 中。
+
+        Args:
+            image_path: 本地图片文件路径
+
+        Returns:
+            图片 URL，可直接用于 Markdown
+
+        Raises:
+            requests.HTTPError: 上传失败时抛出
+            ValueError: 未登录时抛出
+            FileNotFoundError: 文件不存在时抛出
+        """
+        if not self.token:
+            raise ValueError("请先调用 login() 登录")
+
+        if not os.path.exists(image_path):
+            raise FileNotFoundError(f"图片文件不存在: {image_path}")
+
+        url = f"{self.base_url}/api/images"
+        with open(image_path, "rb") as f:
+            files = {"file": (os.path.basename(image_path), f)}
+            response = requests.post(
+                url,
+                files=files,
+                headers={"Authorization": f"Bearer {self.token}"} if self.token else {}},
+                timeout=60
+            )
+        response.raise_for_status()
+        result = response.json()
+
+        if result.get("success"):
+            return f"{self.base_url}{result.get('image_url')}"
+        else:
+            raise requests.HTTPError(f"上传失败: {result}")
+
+    def get_questions_results(
+        self,
+        question_ids: list[int] | None = None,
+        task_id_min: int | None = None,
+        task_id_max: int | None = None,
+        created_after: str | None = None,
+        created_before: str | None = None,
+    ) -> dict:
+        """
+        批量获取多个问题的结果
+
+        支持多种筛选条件组合：
+        - question_ids: 直接指定问题ID列表
+        - task_id_min / task_id_max: 指定任务ID范围 [min, max]
+        - created_after / created_before: 指定创建时间范围 (ISO格式: "2026-04-01")
+
+        Args:
+            question_ids: 问题ID列表
+            task_id_min: 最小任务ID
+            task_id_max: 最大任务ID
+            created_after: 创建时间晚于此值 (ISO格式，如 "2026-04-01")
+            created_before: 创建时间早于此值 (ISO格式，如 "2026-04-07")
+
+        Returns:
+            {
+                "total": 问题总数,
+                "questions": [
+                    {
+                        "question_id": 1,
+                        "content": "题目内容",
+                        "options": [...],
+                        "required_answers": 5,
+                        "current_answers_count": 3,
+                        "answer_distribution": {"选项A": 2, "选项B": 1},
+                        "correct_answer": "选项A",
+                        "avg_time_spent": 25.5
+                    },
+                    ...
+                ]
+            }
+
+        Raises:
+            requests.HTTPError: 请求失败时抛出
+            ValueError: 未登录时抛出
+        """
+        if not self.token:
+            raise ValueError("请先调用 login() 登录")
+
+        url = f"{self.base_url}/api/questions/results"
+        data = {
+            "question_ids": question_ids,
+            "task_id_min": task_id_min,
+            "task_id_max": task_id_max,
+            "created_after": created_after,
+            "created_before": created_before,
+        }
+
+        response = requests.post(url, json=data, headers=self._get_headers(), timeout=60)
+        response.raise_for_status()
+        return response.json()
+
+    def list_tasks(
+        self,
+        task_id_min: int | None = None,
+        task_id_max: int | None = None,
+        created_after: str | None = None,
+        created_before: str | None = None,
+        status: str | None = None,
+    ) -> dict:
+        """
+        按条件筛选列出任务
+
+        Args:
+            task_id_min: 最小任务ID
+            task_id_max: 最大任务ID
+            created_after: 创建时间晚于此值 (ISO格式，如 "2026-04-01")
+            created_before: 创建时间早于此值 (ISO格式，如 "2026-04-07")
+            status: 任务状态筛选 ("running" / "completed")
+
+        Returns:
+            {
+                "total": 任务总数,
+                "tasks": [
+                    {
+                        "id": 1,
+                        "task_type": "ui评估",
+                        "content": "任务描述",
+                        "status": "completed",
+                        "created_at": "2026-04-03T12:00:00",
+                        "total_questions": 5,
+                        "completed_questions": 5
+                    },
+                    ...
+                ]
+            }
+
+        Raises:
+            requests.HTTPError: 请求失败时抛出
+            ValueError: 未登录时抛出
+        """
+        if not self.token:
+            raise ValueError("请先调用 login() 登录")
+
+        url = f"{self.base_url}/api/tasks/list"
+        data = {
+            "task_id_min": task_id_min,
+            "task_id_max": task_id_max,
+            "created_after": created_after,
+            "created_before": created_before,
+            "status": status,
+        }
+
+        response = requests.post(url, json=data, headers=self._get_headers(), timeout=60)
+        response.raise_for_status()
+        return response.json()
+
+  
 def main():
     """OpenClaw 入口函数"""
     parser = argparse.ArgumentParser(
