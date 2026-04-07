@@ -11,8 +11,9 @@ def agent_docs(request: Request):
 
     动态获取服务器地址，返回包含完整接入说明的 HTML 页面
     """
-    # 服务器地址（甲方使用时请替换为实际IP）
-    server_url = "http://115.190.35.120:28178"
+    # 服务器地址（默认值）
+    default_server_ip = "115.190.35.120"
+    port = "28178"
 
     html_content = f"""<!DOCTYPE html>
 <html lang="zh-CN">
@@ -184,6 +185,34 @@ def agent_docs(request: Request):
             color: #666;
             font-size: 0.9em;
         }}
+        /* Server IP input style */
+        .server-ip-input {{
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 12px 16px;
+            background: #f0f7ff;
+            border-radius: 8px;
+            border: 1px solid #c5d9f5;
+        }}
+        .server-ip-input label {{
+            font-weight: 500;
+            color: #333;
+            white-space: nowrap;
+        }}
+        .server-ip-input input {{
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }}
+        .server-ip-input input:focus {{
+            outline: none;
+            border-color: #667eea;
+        }}
     </style>
 </head>
 <body>
@@ -195,19 +224,27 @@ def agent_docs(request: Request):
         <div class="content">
             <div class="section">
                 <h2>服务器信息</h2>
+                <div class="server-ip-input">
+                    <label>服务器 IP：</label>
+                    <input type="text" id="server-ip" value="{default_server_ip}" placeholder="输入服务器IP">
+                </div>
                 <div class="server-info">
                     <div class="label">当前服务器地址：</div>
-                    <div class="value">{server_url}</div>
+                    <div class="value" id="server-url">http://{default_server_ip}:{port}</div>
+                </div>
+                <div class="links">
+                    <a href="http://{default_server_ip}:{port}/static/agent-api.md" class="link-btn" id="api-docs-link" target="_blank">📄 查看 API 文档</a>
+                    <a href="http://{default_server_ip}:{port}/static/agent_sdk.py" class="link-btn" id="sdk-download-link" target="_blank">⬇️ 下载 Python SDK</a>
                 </div>
             </div>
 
             <div class="section">
                 <h2>Agent 接入说明（复制给 OpenClaw）</h2>
                 <p>请复制以下文本粘贴到 OpenClaw 对话框：</p>
-                <div class="code-block" style="white-space: pre-wrap;">
+                <div class="code-block" style="white-space: pre-wrap;" id="agent-instruction">
 请使用众包测试平台的 Agent 功能:
-- Python SDK: {server_url}/static/agent_sdk.py
-- API 文档: {server_url}/static/agent-api.md
+- Python SDK: http://{default_server_ip}:{port}/static/agent_sdk.py
+- API 文档: http://{default_server_ip}:{port}/static/agent-api.md
 
 请下载这些文件并使用它们帮助我:
 1. 登录用户 [你的用户名]
@@ -222,16 +259,16 @@ def agent_docs(request: Request):
             <div class="section">
                 <h2>快速开始 (OpenClaw)</h2>
                 <p>在 OpenClaw 或其他 Agent 环境中，使用以下指令完成任务创建和结果获取：</p>
-                <div class="code-block">
+                <div class="code-block" id="quick-start-code">
                     <span class="comment"># 1. 创建测试任务（需要先准备 questions.json 文件）</span>
-                    <span class="keyword">python</span> agent_sdk.py --username <span class="string">your_username</span> --password <span class="string">your_password</span> --task-type <span class="string">ui评估</span> --task-content <span class="string">"测试APP登录界面"</span> --questions-json <span class="string">questions.json</span> --base-url <span class="string">{server_url}</span>
+                    <span class="keyword">python</span> agent_sdk.py --username <span class="string">your_username</span> --password <span class="string">your_password</span> --task-type <span class="string">ui评估</span> --task-content <span class="string">"测试APP登录界面"</span> --questions-json <span class="string">questions.json</span> --base-url <span class="string">http://{default_server_ip}:{port}</span>
 
                     <span class="comment"># 2. 查看任务状态</span>
                     <span class="keyword">python</span> agent_sdk.py --username <span class="string">your_username</span> --password <span class="string">your_password</span> ...（创建任务后会返回 task_id）
 
                     <span class="comment"># 3. 使用 SDK 编程方式获取结果</span>
                     <span class="keyword">from</span> agent_sdk <span class="keyword">import</span> CrowdTestSDK
-                    sdk = CrowdTestSDK(base_url=<span class="string">"{server_url}"</span>)
+                    sdk = CrowdTestSDK(base_url=<span class="string">"http://{default_server_ip}:{port}"</span>)
                     sdk.login(<span class="string">"username"</span>, <span class="string">"password"</span>)
                     results = sdk.get_task_results(<span class="number">1</span>)
                 </div>
@@ -240,12 +277,12 @@ def agent_docs(request: Request):
 
             <div class="section">
                 <h2>编程接口调用示例</h2>
-                <div class="code-block">
+                <div class="code-block" id="code-example">
 <span class="comment"># 使用 Python SDK</span>
 <span class="keyword">from</span> agent_sdk <span class="keyword">import</span> CrowdTestSDK
 
 <span class="comment"># 初始化 SDK</span>
-sdk = CrowdTestSDK(base_url=<span class="string">"{server_url}"</span>)
+sdk = CrowdTestSDK(base_url=<span class="string">"http://{default_server_ip}:{port}"</span>)
 
 <span class="comment"># 登录</span>
 login_result = sdk.login(<span class="string">"username"</span>, <span class="string">"password"</span>)
@@ -344,24 +381,116 @@ results = sdk.get_task_results(task[<span class="string">"id"</span>])
     </div>
 
     <script>
-        function copyToClipboard(btn) {{
+        function copyToClipboard(btn) {
             // 找到相邻的代码块
             const codeBlock = btn.previousElementSibling;
             const text = codeBlock.textContent;
 
-            navigator.clipboard.writeText(text).then(function() {{
+            navigator.clipboard.writeText(text).then(function() {
                 const originalText = btn.textContent;
                 btn.textContent = '已复制!';
                 btn.style.background = '#28a745';
 
-                setTimeout(function() {{
+                setTimeout(function() {
                     btn.textContent = originalText;
                     btn.style.background = '';
-                }}, 2000);
-            }}).catch(function(err) {{
+                }, 2000);
+            }).catch(function(err) {
                 console.error('复制失败:', err);
-            }});
-        }}
+            });
+        }
+
+        // 动态更新服务器地址
+        function updateServerAddress() {
+            const ip = document.getElementById('server-ip').value || '115.190.35.120';
+            const port = '28178';
+            const serverUrl = `http://${ip}:${port}`;
+
+            // 更新服务器地址显示
+            document.getElementById('server-url').textContent = serverUrl;
+
+            // 更新链接
+            document.getElementById('api-docs-link').href = `${serverUrl}/static/agent-api.md`;
+            document.getElementById('sdk-download-link').href = `${serverUrl}/static/agent_sdk.py`;
+
+            // 更新 Agent 接入说明
+            const agentInstruction = `请使用众包测试平台的 Agent 功能:
+- Python SDK: ${serverUrl}/static/agent_sdk.py
+- API 文档: ${serverUrl}/static/agent-api.md
+
+请下载这些文件并使用它们帮助我:
+1. 登录用户 [你的用户名]
+2. 根据 questions.json 文件创建测试任务
+
+任务类型: ui评估
+任务描述: [你的任务描述]
+题目文件: questions.json`;
+            document.getElementById('agent-instruction').textContent = agentInstruction;
+
+            // 更新快速开始代码
+            const quickStartCode = `                    # 1. 创建测试任务（需要先准备 questions.json 文件）
+                    python agent_sdk.py --username your_username --password your_password --task-type ui评估 --task-content "测试APP登录界面" --questions-json questions.json --base-url "${serverUrl}"
+
+                    # 2. 查看任务状态
+                    python agent_sdk.py --username your_username --password your_password ...（创建任务后会返回 task_id）
+
+                    # 3. 使用 SDK 编程方式获取结果
+                    from agent_sdk import CrowdTestSDK
+                    sdk = CrowdTestSDK(base_url="${serverUrl}")
+                    sdk.login("username", "password")
+                    results = sdk.get_task_results(1)`;
+            document.getElementById('quick-start-code').textContent = quickStartCode;
+
+            // 更新编程接口调用示例
+            const codeExample = `# 使用 Python SDK
+from agent_sdk import CrowdTestSDK
+
+# 初始化 SDK
+sdk = CrowdTestSDK(base_url="${serverUrl}")
+
+# 登录
+login_result = sdk.login("username", "password")
+print(f"登录成功，当前积分: {{login_result['user']['points']}}")
+
+# 定义题目
+questions = [
+    {
+        "content": "这个按钮的颜色是否清晰?",
+        "options": ["非常清晰", "清晰", "一般", "不清晰"],
+        "required_answers": 5,
+        "timeout_seconds": 60
+    },
+    {
+        "content": "页面加载速度是否可以接受?",
+        "options": ["非常快", "快", "一般", "慢"],
+        "required_answers": 3,
+        "timeout_seconds": 45
+    }
+]
+
+# 创建测试任务
+task = sdk.create_task(
+    task_type="ui评估",
+    content="测试APP登录界面",
+    questions=questions
+)
+print(f"任务创建成功，ID: {{task['id']}}")
+
+# 获取任务状态
+status = sdk.get_task_status(task["id"])
+
+# 获取聚合结果
+results = sdk.get_task_results(task["id"])`;
+            document.getElementById('code-example').textContent = codeExample;
+        }
+
+        // 监听 IP 输入变化
+        document.addEventListener('DOMContentLoaded', function() {
+            const ipInput = document.getElementById('server-ip');
+            if (ipInput) {
+                ipInput.addEventListener('input', updateServerAddress);
+            }
+        });
     </script>
 </body>
 </html>

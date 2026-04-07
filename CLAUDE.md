@@ -12,6 +12,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Install dependencies
 source .venv/bin/activate
 
+# 使用uv add 来安装新的python库
+uv add uvicorn
+
 python run.py
 
 # Run the server

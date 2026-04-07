@@ -3,6 +3,8 @@ __pycache__/
 *.py[oc]
 build/
 dist/
+.playwright-mcp/
+test-results/
 wheels/
 *.egg-info
 
@@ -11,7 +13,7 @@ wheels/
 
 # Database
 *.db
-
+*.png
 # IDE
 .idea/
 .vscode/

@@ -133,6 +133,123 @@
             padding: 40px;
             color: #666;
         }
+
+        /* Agent Docs Styles */
+        .agent-docs {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .agent-docs h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        .agent-docs h3 {
+            color: #555;
+            margin: 20px 0 10px 0;
+            font-size: 16px;
+        }
+        .agent-docs p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .agent-docs code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .agent-docs pre {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .agent-docs pre code {
+            background: none;
+            padding: 0;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            display: block;
+        }
+        .endpoint {
+            background: #f0f7ff;
+            border-left: 4px solid #667eea;
+            padding: 12px 16px;
+            margin: 10px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .endpoint code {
+            background: #e0e8f0;
+            font-weight: 600;
+        }
+
+        /* Copy box style for agent instructions */
+        .copy-box {
+            background: #f8f9fa;
+            border: 1px dashed #667eea;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 15px 0;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #333;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Server IP input style */
+        .server-ip-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 12px 16px;
+            background: #f0f7ff;
+            border-radius: 8px;
+            border: 1px solid #c5d9f5;
+        }
+        .server-ip-input label {
+            font-weight: 500;
+            color: #333;
+            white-space: nowrap;
+        }
+        .server-ip-input input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+        .server-ip-input input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Copy button style */
+        .btn-copy {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+        .btn-copy:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -155,7 +272,6 @@
                 </div>
                 <button class="btn btn-primary" onclick="login()">登录</button>
                 <button class="btn btn-secondary" onclick="showRegister()">注册新账号</button>
-                <a href="/api/agent/docs" target="_blank" style="display:block;text-align:center;margin-top:16px;color:#667eea;font-size:14px;">Agent 接入说明</a>
             </div>
         </div>
 
@@ -215,6 +331,44 @@
 
                 <button class="btn btn-secondary" onclick="logout()" style="margin-top: 20px;">退出登录</button>
             </div>
+        </div>
+
+        <!-- Agent 接入说明 -->
+        <div class="agent-docs content">
+            <h2>🤖 Agent 接入说明</h2>
+
+            <div class="server-ip-input">
+                <label>服务器 IP：</label>
+                <input type="text" id="server-ip" value="115.190.35.120" placeholder="输入服务器IP">
+            </div>
+
+            <div class="copy-box" id="agent-instruction">
+根据 http://115.190.35.120:28178/static/agent-api.md 接入 API，下载 http://115.190.35.120:28178/static/agent_sdk.py 获取 Python SDK。
+            </div>
+
+            <button class="btn-copy" onclick="copyAgentInstruction()">📋 复制说明</button>
+
+            <h3>Python SDK 快速示例</h3>
+
+            <pre><code>from agent_sdk import CrowdTestClient
+
+# 初始化客户端
+client = CrowdTestClient(base_url="http://localhost:28178")
+
+# 创建任务
+task = client.create_task(
+    task_type="内容审核",
+    content="判断文本情感倾向",
+    questions=[
+        {
+            "content": "这句话的情感是？",
+            "options": ["积极", "消极", "中性"],
+            "required_answers": 5
+        }
+    ]
+)
+
+print(f"任务创建成功: {task.id}")</code></pre>
         </div>
     </div>
 
@@ -449,6 +603,37 @@
             token = null;
             showLogin();
         }
+
+        // Agent 接入说明 - 服务器IP动态更新
+        function updateAgentInstruction() {
+            const ip = document.getElementById('server-ip').value || '115.190.35.120';
+            const instruction = `根据 http://${ip}:28178/static/agent-api.md 接入 API，下载 http://${ip}:28178/static/agent_sdk.py 获取 Python SDK。`;
+            document.getElementById('agent-instruction').textContent = instruction;
+        }
+
+        function copyAgentInstruction() {
+            const text = document.getElementById('agent-instruction').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('已复制到剪贴板');
+            }).catch(err => {
+                // 降级方案
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('已复制到剪贴板');
+            });
+        }
+
+        // 监听IP输入变化
+        document.addEventListener('DOMContentLoaded', function() {
+            const ipInput = document.getElementById('server-ip');
+            if (ipInput) {
+                ipInput.addEventListener('input', updateAgentInstruction);
+            }
+        });
     </script>
 </body>
 </html>
