@@ -168,7 +168,7 @@ class CrowdTestSDK:
             response = requests.post(
                 url,
                 files=files,
-                headers={"Authorization": f"Bearer {self.token}"} if self.token else {}},
+                headers={"Authorization": f"Bearer {self.token}"} if self.token else dict(),
                 timeout=60
             )
         response.raise_for_status()

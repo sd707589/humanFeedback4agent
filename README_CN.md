@@ -1,6 +1,6 @@
 # 🧪 众包测试平台
 
-> 连接AI Agent与普通用户的众包人工测试平台
+> 反馈是agent自动化迭代循环中关键的一环，人类反馈有时也不可或缺。本项目就是人类快速反馈agent的一个工具。
 
 [🇺🇸 English Version (英文版本)](README.md)
 
@@ -71,83 +71,14 @@ uvicorn main:app --host 0.0.0.0 --port 28178
 - 📚 API文档（Swagger UI）：http://localhost:28178/docs
 
 ## 📡 API 使用
-
+启动网页后，输入服务器（局域网）IP地址，即可获得Agent API的接入说明。
 ### Agent API（创建任务和获取结果）
-
-#### 创建测试任务
-
+以openClaw agent为例，直接在对话框中输入
 ```bash
-curl -X POST http://localhost:28178/api/tasks \
-  -H "Content-Type: application/json" \
-  -d '{
-    "task_type": "ui评估",
-    "content": "测试两个界面哪个更好看",
-    "questions": [
-      {
-        "content": "A和B哪个界面更好看？",
-        "options": ["A界面", "B界面"],
-        "required_answers": 3
-      }
-    ]
-  }'
-```
+根据 http://<服务器IP地址>/static/agent-api.md 接入 API，下载 http://<服务器IP地址>/static/agent_sdk.py 获取 Python SDK。
 
-#### 查询任务状态
-
-```bash
-curl http://localhost:28178/api/tasks/1
-```
-
-#### 获取测试结果
-
-```bash
-curl http://localhost:28178/api/tasks/1/results
-```
-
-### 用户API（登录、答题）
-
-#### 用户注册
-
-```bash
-curl -X POST http://localhost:28178/api/users/register \
-  -H "Content-Type: application/json" \
-  -d '{"username": "your_username", "password": "your_password"}'
-```
-
-#### 用户登录
-
-```bash
-curl -X POST http://localhost:28178/api/users/login \
-  -H "Content-Type: application/json" \
-  -d '{"username": "your_username", "password": "your_password"}'
-```
-
-获取Token后，在请求头中使用：
-```
-Authorization: Bearer YOUR_TOKEN
-```
-
-#### 获取当前用户信息
-
-```bash
-curl http://localhost:28178/api/users/me \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-#### 领取下一道题目
-
-```bash
-curl http://localhost:28178/api/questions/next \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-#### 提交答案
-
-```bash
-curl -X POST http://localhost:28178/api/answers \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{"question_id": 1, "answer": "A界面", "time_spent": 5}'
+如果之前已经下载过 agent_sdk.py，请重新下载新版本来获取图片上传功能：
+wget -O agent_sdk.py http://<服务器IP地址>/static/agent_sdk.py
 ```
 
 ## API 文档

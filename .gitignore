@@ -24,6 +24,6 @@ docs/
 nohup.out
 
 *.zip
-
+caoExp.md
 # Worktrees
 .worktrees/

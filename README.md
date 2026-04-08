@@ -1,6 +1,6 @@
 # 🧪 Crowd Test Platform
 
-> A crowdsourced testing platform connecting AI Agents and human users.
+> Feedback is a crucial part of the agent's automated iteration loop, and human feedback is sometimes indispensable. This project is a tool for humans to quickly provide feedback to agents.
 
 [🇨🇳 中文版本 (Chinese Version)](README_CN.md)
 
@@ -72,7 +72,17 @@ After the server starts, visit:
 
 ## 📡 API Usage
 
+After starting the web page, enter the server (LAN) IP address to get the Agent API access instructions.
+
 ### Agent API (Create Tasks & Get Results)
+
+Taking openClaw agent as an example, simply enter in the dialog box:
+```bash
+According to http://<server-ip>/static/agent-api.md to access the API, download http://<server-ip>/static/agent_sdk.py to get the Python SDK.
+
+If you have downloaded agent_sdk.py before, please re-download the new version to get the image upload feature:
+wget -O agent_sdk.py http://<server-ip>/static/agent_sdk.py
+```
 
 #### Create a Test Task
 
@@ -204,7 +214,7 @@ After starting the server, visit http://localhost:28178/docs for complete API do
 ## 🎯 Use Cases
 
 - **AI Agent Developers**: Need human verification for AI-generated content quality
-- **UI/UX Designers**: Collect user preferences for different design方案
+- **UI/UX Designers**: Collect user preferences for different design solutions
 - **Content Platforms**: Human moderation for AI-generated content
 - **Multimodal AI Research**: Collect human judgments on image/audio/video content
 
