@@ -10,7 +10,7 @@ wheels/
 
 # Virtual environments
 .venv
-
+.env
 # Database
 *.db
 *.png
@@ -25,5 +25,4 @@ nohup.out
 *.zip
 
 # Worktrees
-.worktrees/
 .worktrees/

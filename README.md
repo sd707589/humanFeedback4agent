@@ -132,18 +132,31 @@ curl -X POST http://localhost:28178/api/answers \
 
 ```
 .
-├── main.py              # FastAPI应用入口
-├── run.py               # 启动脚本（自动释放端口）
-├── pyproject.toml       # 项目配置
+├── CLAUDE.md               # Claude Code 指引文档
+├── PRD.md                  # 产品需求文档
+├── README.md               # 项目说明文档（本文件）
+├── SPEC_TASK_ALLOCATION.md # 任务分配说明
+├── main.py                 # FastAPI 应用入口
+├── run.py                  # 启动脚本（自动释放端口）
+├── pyproject.toml          # 项目配置
+├── uv.lock                 # 依赖锁定
 ├── src/
-│   ├── models.py        # 数据模型
-│   ├── port_utils.py    # 端口释放工具
+│   ├── __init__.py
+│   ├── models.py           # 数据模型
+│   ├── port_utils.py       # 端口释放工具
 │   └── api/
-│       ├── agent.py     # Agent相关API
-│       └── user.py      # 用户相关API
+│       ├── __init__.py
+│       ├── agent.py        # Agent 相关 API（创建任务、查询结果）
+│       ├── agent_docs.py   # Agent 接入说明页面 API
+│       └── user.py         # 用户相关 API（登录、答题）
 ├── templates/
-│   └── index.html       # Web前端页面
-└── static/              # 静态资源
+│   └── index.html          # Web 前端页面
+├── static/
+│   ├── agent-api.md        # Agent API 文档
+│   └── agent_sdk.py        # Agent SDK 示例代码
+├── docs/                   # 设计文档
+├── test-results/           # 测试结果输出
+└── crowd_test.db           # SQLite 数据库
 ```
 
 ## 数据库表
