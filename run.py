@@ -5,12 +5,16 @@
 使用方法:
     python run.py
 """
+import os
 import sys
 import uvicorn
+from dotenv import load_dotenv
 
 from src.port_utils import kill_port
 
-PORT = 28178
+# 加载环境变量
+load_dotenv()
+PORT = int(os.getenv("PORT", "28178"))
 
 if __name__ == "__main__":
     # 释放端口

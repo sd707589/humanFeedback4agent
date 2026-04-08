@@ -1,7 +1,14 @@
+import os
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
+from dotenv import load_dotenv
 
 router = APIRouter()
+
+# 加载环境变量
+load_dotenv()
+default_server_ip = os.getenv("SERVER_IP", "localhost")
+port = os.getenv("PORT", "28178")
 
 
 @router.get("/agent/docs", response_class=HTMLResponse)
@@ -11,8 +18,6 @@ def agent_docs(request: Request):
 
     动态获取服务器地址，返回包含完整接入说明的 HTML 页面
     """
-    default_server_ip = "115.190.35.120"
-    port = "28178"
 
     html_content = """<!DOCTYPE html>
 <html lang="zh-CN">
@@ -400,8 +405,8 @@ results = sdk.get_task_results(task[<span class="string">"id"</span>])
 
         // 动态更新服务器地址
         function updateServerAddress() {
-            const ip = document.getElementById('server-ip').value || '115.190.35.120';
-            const port = '28178';
+            const ip = document.getElementById('server-ip').value || '{default_server_ip}';
+            const port = '{port}';
             const serverUrl = `http://${ip}:${port}`;
 
             // 更新服务器地址显示

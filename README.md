@@ -1,86 +1,112 @@
-# 众包测试平台
+# 🧪 Crowd Test Platform
 
-连接AI Agent与普通用户的众包测试平台。
+> A crowdsourced testing platform connecting AI Agents and human users.
 
-## 概述
+[🇨🇳 中文版本 (Chinese Version)](README_CN.md)
 
-这是一个用于人工测试的众包平台，解决AI Agent无法自动化执行的人工判断测试需求。
+[![Python](https://img.shields.io/badge/Python-3.13+-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-009688.svg)](https://fastapi.tiangolo.com/)
+[![UV](https://img.shields.io/badge/Built%20with-UV-purple.svg)](https://github.com/astral-sh/uv)
 
-- **甲方 (Agent)**: 通过API提交测试任务，获取测试结果
-- **乙方 (平台)**: 收集、组织测试任务，管理用户和积分
-- **丙方 (用户)**: 通过Web或API（如微信小程序）参与测试，获得积分奖励
+## 📋 Table of Contents
 
-## 功能特性
+- [📖 Overview](#-overview)
+- [✨ Features](#-features)
+- [🚀 Quick Start](#-quick-start)
+- [📡 API Usage](#-api-usage)
+- [📊 Points System](#-points-system)
+- [🏗️ Project Structure](#️-project-structure)
+- [🗄️ Database Schema](#️-database-schema)
+- [🎯 Use Cases](#-use-cases)
+- [🛣️ Roadmap](#️-roadmap)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
 
-- 支持多种测试类型：UI评估、内容审核、功能验证、多模态测试
-- 每次只展示一道题目，快速反馈
-- Agent定义每题需要多少人回答，采用多数投票确定正确答案
-- 用户完成答题自动获得积分
-- 双通道接入：Web端 + 用户API（供小程序调用）
+## 📖 Overview
 
-## 技术栈
+This is a crowdsourced platform for human testing, addressing the need for human judgment in testing tasks that AI Agents cannot automate.
 
-- **后端**: Python FastAPI
-- **数据库**: SQLite
-- **前端**: HTML/JS
+**Three-role collaboration:**
 
-## 快速开始
+- 🏷️ **Party A (Agent)**: Submit testing tasks via API and get aggregated results
+- 🏢 **Party B (Platform)**: Collect and organize tasks, manage users and points
+- 👤 **Party C (User)**: Participate via Web or API (e.g., WeChat Mini Program) and earn points
 
-### 1. 安装依赖
+## ✨ Features
+
+- ✅ **Multiple Test Types**: Supports UI evaluation, content moderation, functional verification, multimodal testing
+- ✅ **One Question Per Page**: Single question display for quick feedback
+- ✅ **Majority Voting**: Agent defines required answers per question, automatically aggregates results
+- ✅ **Points Incentive**: Users earn points automatically after completing tasks
+- ✅ **Dual-channel Access**: Supports both Web interface and third-party API (for mini-programs)
+- ✅ **Ready to Use**: SQLite database, runs without extra configuration
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.13+
+- [uv](https://github.com/astral-sh/uv) (recommended for dependency management)
+
+### 1. Install Dependencies
 
 ```bash
 uv sync
 ```
 
-### 2. 启动服务
+### 2. Start the Server
 
 ```bash
 python run.py
 ```
 
-或使用 uvicorn：
+Or use uvicorn directly:
 
 ```bash
 uvicorn main:app --host 0.0.0.0 --port 28178
 ```
 
-服务启动后访问: http://localhost:28178
+After the server starts, visit:
+- 🌐 Frontend: http://localhost:28178
+- 📚 API Docs (Swagger UI): http://localhost:28178/docs
 
-### 3. Agent API 使用
+## 📡 API Usage
 
-#### 创建测试任务
+### Agent API (Create Tasks & Get Results)
+
+#### Create a Test Task
 
 ```bash
 curl -X POST http://localhost:28178/api/tasks \
   -H "Content-Type: application/json" \
   -d '{
-    "task_type": "ui评估",
-    "content": "测试两个界面哪个更好看",
+    "task_type": "ui_evaluation",
+    "content": "Test which interface looks better",
     "questions": [
       {
-        "content": "A和B哪个界面更好看？",
-        "options": ["A界面", "B界面"],
+        "content": "Which interface looks better, A or B?",
+        "options": ["Interface A", "Interface B"],
         "required_answers": 3
       }
     ]
   }'
 ```
 
-#### 查询任务状态
+#### Check Task Status
 
 ```bash
 curl http://localhost:28178/api/tasks/1
 ```
 
-#### 获取测试结果
+#### Get Test Results
 
 ```bash
 curl http://localhost:28178/api/tasks/1/results
 ```
 
-### 4. 用户API使用
+### User API (Login & Answering)
 
-#### 用户注册
+#### User Registration
 
 ```bash
 curl -X POST http://localhost:28178/api/users/register \
@@ -88,7 +114,7 @@ curl -X POST http://localhost:28178/api/users/register \
   -d '{"username": "your_username", "password": "your_password"}'
 ```
 
-#### 用户登录
+#### User Login
 
 ```bash
 curl -X POST http://localhost:28178/api/users/login \
@@ -96,77 +122,119 @@ curl -X POST http://localhost:28178/api/users/login \
   -d '{"username": "your_username", "password": "your_password"}'
 ```
 
-获取Token后，在请求头中使用：
+After getting the token, use it in request headers:
 ```
 Authorization: Bearer YOUR_TOKEN
 ```
 
-#### 获取当前用户信息
+#### Get Current User Info
 
 ```bash
 curl http://localhost:28178/api/users/me \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
-#### 领取下一道题目
+#### Get Next Question
 
 ```bash
 curl http://localhost:28178/api/questions/next \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
-#### 提交答案
+#### Submit Answer
 
 ```bash
 curl -X POST http://localhost:28178/api/answers \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{"question_id": 1, "answer": "A界面", "time_spent": 5}'
+  -d '{"question_id": 1, "answer": "Interface A", "time_spent": 5}'
 ```
 
-## API 文档
+## API Documentation
 
-启动服务后访问 http://localhost:28178/docs 查看完整API文档（Swagger UI）。
+After starting the server, visit http://localhost:28178/docs for complete API documentation (Swagger UI).
 
-## 项目结构
+## 📊 Points System
+
+| Action | Points Reward |
+|--------|---------------|
+| Complete one question | +10 points |
+
+> 🔄 **To be implemented**: Difficulty is automatically calculated based on average time spent and accuracy, points reward coefficient can be adjusted
+
+## 🏗️ Project Structure
 
 ```
 .
-├── CLAUDE.md               # Claude Code 指引文档
-├── PRD.md                  # 产品需求文档
-├── README.md               # 项目说明文档（本文件）
-├── SPEC_TASK_ALLOCATION.md # 任务分配说明
-├── main.py                 # FastAPI 应用入口
-├── run.py                  # 启动脚本（自动释放端口）
-├── pyproject.toml          # 项目配置
-├── uv.lock                 # 依赖锁定
+├── CLAUDE.md               # Claude Code guide
+├── PRD.md                  # Product Requirements Document
+├── README.md               # This file (English)
+├── README_CN.md            # Chinese version
+├── SPEC_TASK_ALLOCATION.md # Task allocation description
+├── main.py                 # FastAPI application entry
+├── run.py                  # Startup script (auto release port)
+├── pyproject.toml          # Project configuration
+├── uv.lock                 # Dependency lock file
 ├── src/
 │   ├── __init__.py
-│   ├── models.py           # 数据模型
-│   ├── port_utils.py       # 端口释放工具
+│   ├── models.py           # Data models
+│   ├── port_utils.py       # Port release utility
 │   └── api/
 │       ├── __init__.py
-│       ├── agent.py        # Agent 相关 API（创建任务、查询结果）
-│       ├── agent_docs.py   # Agent 接入说明页面 API
-│       └── user.py         # 用户相关 API（登录、答题）
+│       ├── agent.py        # Agent related APIs (create task, get result)
+│       ├── agent_docs.py   # Agent documentation page API
+│       └── user.py         # User related APIs (login, answer)
 ├── templates/
-│   └── index.html          # Web 前端页面
+│   └── index.html          # Web frontend page
 ├── static/
-│   ├── agent-api.md        # Agent API 文档
-│   └── agent_sdk.py        # Agent SDK 示例代码
-├── docs/                   # 设计文档
-├── test-results/           # 测试结果输出
-└── crowd_test.db           # SQLite 数据库
+│   ├── agent-api.md        # Agent API documentation
+│   └── agent_sdk.py        # Agent SDK example code
+├── docs/                   # Design documents
+├── test-results/           # Test results output
+└── crowd_test.db           # SQLite database
 ```
 
-## 数据库表
+## 🗄️ Database Schema
 
-- **users**: 用户表（用户名、密码哈希、积分）
-- **test_tasks**: 测试任务表（任务类型、内容、状态）
-- **test_questions**: 题目表（内容、选项、需回答人数）
-- **user_answers**: 用户答案表（用户答案、耗时）
+- **users**: User table (username, password hash, points)
+- **test_tasks**: Test task table (task type, content, status)
+- **test_questions**: Question table (content, options, required answers)
+- **user_answers**: User answer table (user answer, time spent)
 
-## 积分规则
+## 🎯 Use Cases
 
-- 用户每完成一道题目可获得10积分
-- 难度根据平均耗时和正确率自动计算（待实现）
+- **AI Agent Developers**: Need human verification for AI-generated content quality
+- **UI/UX Designers**: Collect user preferences for different design方案
+- **Content Platforms**: Human moderation for AI-generated content
+- **Multimodal AI Research**: Collect human judgments on image/audio/video content
+
+## 🛣️ Roadmap
+
+- [ ] Difficulty evaluation system (auto-calculated based on average time and accuracy)
+- [ ] Points leaderboard
+- [ ] Task expiration mechanism
+- [ ] User profile analysis
+- [ ] WebSocket real-time push
+- [ ] Task categorization and filtering
+- [ ] Admin dashboard
+- [ ] Data export functionality
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [FastAPI](https://fastapi.tiangolo.com/) - Modern web framework for Python
+- [SQLAlchemy](https://www.sqlalchemy.org/) - SQL toolkit and ORM
+- [uv](https://github.com/astral-sh/uv) - Fast Python package manager

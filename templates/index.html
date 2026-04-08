@@ -493,14 +493,14 @@
 
                 <div class="server-ip-input">
                     <label>服务器 IP：</label>
-                    <input type="text" id="server-ip" value="115.190.35.120" placeholder="输入服务器IP">
+                    <input type="text" id="server-ip" value="{default_server_ip}" placeholder="输入服务器IP">
                 </div>
 
                 <div class="copy-box" id="agent-instruction">
-根据 http://115.190.35.120:28178/static/agent-api.md 接入 API，下载 http://115.190.35.120:28178/static/agent_sdk.py 获取 Python SDK。
+根据 http://{default_server_ip}:{port}/static/agent-api.md 接入 API，下载 http://{default_server_ip}:{port}/static/agent_sdk.py 获取 Python SDK。
 
 如果之前已经下载过 agent_sdk.py，请重新下载新版本来获取图片上传功能：
-wget -O agent_sdk.py http://115.190.35.120:28178/static/agent_sdk.py
+wget -O agent_sdk.py http://{default_server_ip}:{port}/static/agent_sdk.py
             </div>
 
                 <button class="btn-copy" onclick="copyAgentInstruction()">📋 复制说明</button>
@@ -877,11 +877,13 @@ print(f"找到 {tasks['total']} 个已完成任务")</code></pre>
         }
 
         function updateAgentInstruction() {
-            const ip = document.getElementById('server-ip').value || '115.190.35.120';
-            const instruction = `根据 http://${ip}:28178/static/agent-api.md 接入 API，下载 http://${ip}:28178/static/agent_sdk.py 获取 Python SDK。
+            const defaultIp = "{default_server_ip}";
+            const defaultPort = "{port}";
+            const ip = document.getElementById('server-ip').value || defaultIp;
+            const instruction = `根据 http://${ip}:{port}/static/agent-api.md 接入 API，下载 http://${ip}:{port}/static/agent_sdk.py 获取 Python SDK。
 
 如果之前已经下载过 agent_sdk.py，请重新下载新版本来获取图片上传功能：
-wget -O agent_sdk.py http://${ip}:28178/static/agent_sdk.py`;
+wget -O agent_sdk.py http://${ip}:{port}/static/agent_sdk.py`;
             document.getElementById('agent-instruction').textContent = instruction;
         }
 

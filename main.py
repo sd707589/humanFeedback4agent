@@ -1,9 +1,15 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
 import os
+from dotenv import load_dotenv
 
 from src.models import init_db
+
+# 加载环境变量
+load_dotenv()
+SERVER_IP = os.getenv("SERVER_IP", "localhost")
+PORT = os.getenv("PORT", "28178")
 
 app = FastAPI(title="众包测试平台", version="0.1.0")
 
@@ -16,7 +22,14 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 def root():
-    return FileResponse("templates/index.html")
+    # 读取模板并替换环境变量
+    with open("templates/index.html", "r", encoding="utf-8") as f:
+        html_content = f.read()
+
+    # 替换占位符（只替换我们定义的两个，避免和 CSS/JS 中的 {} 冲突）
+    html_content = html_content.replace("{default_server_ip}", SERVER_IP)
+    html_content = html_content.replace("{port}", str(PORT))
+    return HTMLResponse(content=html_content)
 
 
 # 路由导入
